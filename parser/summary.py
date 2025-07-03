@@ -26,7 +26,7 @@ def generate_and_save_summary(pdf_id):
         entry = SpendingSummary(
             pdf_id=pdf_id,
             category=detail,
-            total_spent=values['total'],
+            total_spent=round(values['total'], 2),
             transaction_count=values['count']
         )
         db.session.add(entry)
@@ -52,7 +52,7 @@ def generate_and_save_received_summary(pdf_id):
         entry = ReceivedSummary(
             pdf_id=pdf_id,
             category=detail,
-            total_received=values['total'],
+            total_received=round(values['total'], 2),
             transaction_count=values['count']
         )
         db.session.add(entry)

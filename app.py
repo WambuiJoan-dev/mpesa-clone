@@ -23,6 +23,7 @@ from parser import *
 app.register_blueprint(upload_bp)
 app.register_blueprint(summary_bp)
 app.register_blueprint(extract_bp)
+app.register_blueprint(fetching_bp)
 
 
 

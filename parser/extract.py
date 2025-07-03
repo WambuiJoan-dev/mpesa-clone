@@ -14,17 +14,26 @@ from collections import defaultdict
 extract_bp = Blueprint("extract_bp", __name__)
 
 
-def clean_amount(value):
-    try:
-        if value in ["", "-", None]:
-            return 0.0
-        return float(value.replace(",", "").replace(",", "").strip())
-    except Exception:
-        return 0.0
 
+
+def calculate_duration_months(period_str):
+    if " - " in period_str:
+        parts = [p.strip() for p in period_str.split(" - ")]
+        if len(parts) == 2:
+            try:
+                from_date = datetime.strptime(parts[0], "%d %b %Y")
+                to_date = datetime.strptime(parts[1], "%d %b %Y")
+
+                months = (to_date.year - from_date.year) * 12 + (to_date.month - from_date.month)
+                if to_date.day < from_date.day:
+                    months -= 1
+
+                return max(months, 0)
+            except ValueError as e:
+                raise ValueError(f"Failed to parse dates in period: {period_str} — {e}")
+    return 0
 
 def extract_metadata(pdf_id, pdf_bytes, password=None):
-    
     doc = fitz.open(stream=pdf_bytes, filetype='pdf')
     if doc.is_encrypted:
         if not password or not doc.authenticate(password):
@@ -33,23 +42,31 @@ def extract_metadata(pdf_id, pdf_bytes, password=None):
     first_page_text = doc[0].get_text()
     last_page_text = doc[-1].get_text()
 
-    # Example regex-based extractions — adjust as needed
     name_match = re.search(r"Customer Name\s*:\s*(.*)", first_page_text)
     phone_match = re.search(r"Mobile Number\s*:\s*(.*)", first_page_text)
     email_match = re.search(r"Email Address\s*:\s*(.*)", first_page_text)
     period_match = re.search(r"Statement Period\s*:\s*(.*)", first_page_text)
     date_match = re.search(r"Request Date\s*:\s*(.*)", first_page_text)
 
+    # Extract raw values
+    period_str = period_match.group(1).strip() if period_match else "Unknown"
+    request_date_str = date_match.group(1).strip() if date_match else "Unknown"
+
+    # Compute duration in months
+    duration_months = calculate_duration_months(period_str) if period_str != "Unknown" else None
+
+    # Save customer details
     db.session.add(CustomerDetails(
         pdf_id=pdf_id,
         customer_name=name_match.group(1).strip() if name_match else "Unknown",
         mobile_number=phone_match.group(1).strip() if phone_match else "Unknown",
         email_address=email_match.group(1).strip() if email_match else "Unknown",
-        statement_period=period_match.group(1).strip() if period_match else "Unknown",
-        request_date=date_match.group(1).strip() if date_match else "Unknown",
+        statement_period=period_str,
+        request_date=request_date_str,
+        statement_duration_months=duration_months
     ))
 
-    # Footer extras from last page
+    # Save footer notes
     for line in last_page_text.splitlines():
         if "verification code" in line.lower() or "disclaimer" in line.lower():
             db.session.add(DocumentExtras(
