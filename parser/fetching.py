@@ -62,3 +62,19 @@ def summary_received(pdf_id):
         }
         for entry in received
     ])
+
+
+@fetching_bp.route("/documents", methods=["GET"])
+def list_uploaded_documents():
+    documents = PdfDocument.query.order_by(PdfDocument.uploaded_at.desc()).all()
+
+    result = [
+        {
+            "id": doc.id,
+            "filename": doc.filename,
+            "uploaded_at": doc.uploaded_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for doc in documents
+    ]
+
+    return jsonify(result)
