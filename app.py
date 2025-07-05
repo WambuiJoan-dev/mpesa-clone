@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 CORS(app)
 # migration initialization
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mpesa.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mpesadb_user:ef5RyMB1NuZcnxoWWgaxE4dePY2HQRc6@dpg-d1kdgu7diees73ec8be0-a.oregon-postgres.render.com/mpesadb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 migrate = Migrate(app, db)
 db.init_app(app)

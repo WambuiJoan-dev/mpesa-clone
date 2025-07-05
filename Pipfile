@@ -12,6 +12,8 @@ pymupdf = "*"
 pillow = "*"
 imagehash = "*"
 pytesseract = "*"
+psycopg2-binary = "*"
+gunicorn = "*"
 
 [dev-packages]
 
