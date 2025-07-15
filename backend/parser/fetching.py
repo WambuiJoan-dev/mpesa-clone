@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
-from models import db, PdfDocument, Transaction, SpendingSummary, ReceivedSummary, CustomerDetails
+from models import db, PdfDocument, Transaction, SpendingSummary, ReceivedSummary, CustomerDetails, TotalSummary
 from datetime import datetime
 import os
 from collections import defaultdict
@@ -78,3 +78,22 @@ def list_uploaded_documents():
     ]
 
     return jsonify(result)
+
+
+@fetching_bp.route("/totalsummary/<int:pdf_id>", methods=["GET"])
+def total_summary(pdf_id):
+    total = TotalSummary.query.filter_by(pdf_id=pdf_id).all()
+
+    if not total:
+        return jsonify({"error": "No Total Summary found for the given PDF ID"}), 404
+
+    return jsonify([
+        {
+            'pdf_id': total_money.pdf_id,
+            'transaction_type': total_money.transaction_type,
+            'total_paid_in': total_money.total_paid_in,
+            'total_paid_out': total_money.total_paid_out
+        }
+        for total_money in total
+    ])
+
