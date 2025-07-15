@@ -11,7 +11,7 @@ class PdfDocument(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String, nullable=False)
     content = db.Column(db.LargeBinary, nullable=False)
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 # M-PESA Transaction model
 class Transaction(db.Model):

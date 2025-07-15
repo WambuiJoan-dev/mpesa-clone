@@ -45,6 +45,7 @@ def upload_pdf():
         new_doc = PdfDocument(
             filename=filename,
             content=pdf_bytes,
+            uploaded_at=datetime.utcnow()
         )
         db.session.add(new_doc)
         db.session.flush()
