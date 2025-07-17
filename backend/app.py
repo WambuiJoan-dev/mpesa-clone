@@ -4,15 +4,27 @@ from models import db,PdfDocument
 from datetime import datetime
 from datetime import timedelta
 from flask_cors import CORS
+from dotenv import load_dotenv
+import os
 
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
-
 CORS(app)
-# migration initialization
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mpesadb_user:ef5RyMB1NuZcnxoWWgaxE4dePY2HQRc6@dpg-d1kdgu7diees73ec8be0-a.oregon-postgres.render.com/mpesadb'
+
+# Database configuration with environment variables
+# Default to local PostgreSQL if DATABASE_URL is not set
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://mpesa_user:your_password_here@localhost:5432/mpesa_clone_db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Flask configuration
+app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+
+# migration initialization
 migrate = Migrate(app, db)
 db.init_app(app)
 
